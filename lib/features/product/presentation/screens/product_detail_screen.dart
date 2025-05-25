@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:oltron/features/product/domain/repositories/product_repository.dart';
+import '../../domain/repositories/product_repository.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
@@ -82,7 +82,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void _shareProduct() async {
     if (product == null) return;
 
-    final String deepLink = 'https://oltronstore.com/product/${product!.id}';
+    final String deepLink = 'https://adminecomexe.com/product/${product!.id}';
     final String shareText =
         'Check out this product!\n\n'
         'Name: ${product!.name}\n'

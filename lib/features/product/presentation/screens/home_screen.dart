@@ -375,6 +375,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
@@ -386,33 +387,18 @@ class _HomeScreenState extends State<HomeScreen> {
             : isTablet
             ? 3
             : 4;
-    final avatarRadius = isMobile ? 24.0 : 32.0;
     final adsWidth = isMobile ? screenWidth : screenWidth * 0.8;
 
-    if (_categoryError != null && mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(_categoryError!)));
-        _categoryError = null;
-      });
-    }
-    if (_productsError != null && mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(_productsError!)));
-        _productsError = null;
-      });
-    }
-    if (_carouselError != null && mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(_carouselError!)));
-        _carouselError = null;
-      });
-    }
+    // Modular error handler
+    ErrorSnackbarHandler(
+      categoryError: _categoryError,
+      productsError: _productsError,
+      carouselError: _carouselError,
+      onClearCategoryError: () => setState(() => _categoryError = null),
+      onClearProductsError: () => setState(() => _productsError = null),
+      onClearCarouselError: () => setState(() => _carouselError = null),
+      context: context,
+    );
 
     final scaffold = Scaffold(
       appBar: AppBar(
@@ -450,219 +436,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 _isLoading
                     ? Column(
                       children: [
-                        // Skeleton for Carousel
                         _buildCarouselSkeleton(isMobile, adsWidth),
-                        // Skeleton for Categories
                         _buildCategoriesSkeleton(isMobile),
-                        // Skeleton for Product Grid
                         _buildProductGridSkeleton(isMobile, crossAxisCount),
                       ],
                     )
                     : Column(
                       children: [
-                        // Carousel Advert Section
-                        if (carouselItems.isNotEmpty)
-                          Container(
-                            width: adsWidth,
-                            margin: EdgeInsets.all(isMobile ? 8.0 : 16.0),
-                            child: CarouselSlider(
-                              options: CarouselOptions(
-                                height: isMobile ? 150.0 : 200.0,
-                                enlargeCenterPage: false,
-                                autoPlay: true,
-                                autoPlayInterval: const Duration(seconds: 3),
-                                viewportFraction: 0.9,
-                                aspectRatio: 16 / 9,
-                                initialPage: 0,
-                                enableInfiniteScroll: true,
-                                scrollDirection: Axis.horizontal,
-                              ),
-                              items:
-                                  carouselItems.map((carouselItem) {
-                                    return Builder(
-                                      builder: (BuildContext context) {
-                                        return GestureDetector(
-                                          onTap:
-                                              carouselItem.productId != null
-                                                  ? () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder:
-                                                            (
-                                                              context,
-                                                            ) => ProductDetailScreen(
-                                                              productId:
-                                                                  carouselItem
-                                                                      .productId!,
-                                                            ),
-                                                      ),
-                                                    );
-                                                  }
-                                                  : null,
-                                          child: Container(
-                                            width:
-                                                MediaQuery.of(
-                                                  context,
-                                                ).size.width,
-                                            margin: const EdgeInsets.symmetric(
-                                              horizontal: 5.0,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black26,
-                                                  blurRadius: 5.0,
-                                                  offset: const Offset(0, 2),
-                                                ),
-                                              ],
-                                            ),
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                              child: CachedNetworkImage(
-                                                imageUrl: carouselItem.imageUrl,
-                                                fit: BoxFit.cover,
-                                                width: double.infinity,
-                                                height: double.infinity,
-                                                placeholder:
-                                                    (
-                                                      context,
-                                                      url,
-                                                    ) => const Center(
-                                                      child:
-                                                          CircularProgressIndicator(),
-                                                    ),
-                                                errorWidget:
-                                                    (context, url, error) =>
-                                                        const Icon(Icons.error),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  }).toList(),
-                            ),
-                          ),
-                        // Categories Section
-                        SizedBox(
-                          height: isMobile ? 80 : 100,
-                          child: Center(
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: categories.length,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: isMobile ? 16.0 : 24.0,
-                              ),
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                final category = categories[index];
-                                return Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: isMobile ? 8.0 : 12.0,
-                                  ),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        selectedCategory =
-                                            selectedCategory == category
-                                                ? null
-                                                : category;
-                                        _loadProducts();
-                                      });
-                                    },
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        CircleAvatar(
-                                          radius: isMobile ? 24 : 28,
-                                          backgroundColor:
-                                              selectedCategory == category
-                                                  ? Theme.of(
-                                                    context,
-                                                  ).colorScheme.secondary
-                                                  : Colors.grey.shade200,
-                                          child: Icon(
-                                            category == 'Laptop'
-                                                ? Icons.computer
-                                                : category == 'RAM'
-                                                ? Icons
-                                                    .data_thresholding_rounded
-                                                : category == 'Processor'
-                                                ? Icons.memory
-                                                : category == 'Battery'
-                                                ? Icons.battery_0_bar
-                                                : Icons.videocam,
-                                            color:
-                                                selectedCategory == category
-                                                    ? Theme.of(
-                                                      context,
-                                                    ).colorScheme.onSecondary
-                                                    : Colors.grey,
-                                            size: isMobile ? 20 : 26,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          category,
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.labelMedium?.copyWith(
-                                            fontSize: isMobile ? 12 : 14,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
+                        CarouselSection(
+                          carouselItems: carouselItems,
+                          adsWidth: adsWidth,
+                          isMobile: isMobile,
                         ),
-                        // Product Grid Section
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          padding: EdgeInsets.all(isMobile ? 8.0 : 16.0),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossAxisCount,
-                                crossAxisSpacing: isMobile ? 8.0 : 12.0,
-                                mainAxisSpacing: isMobile ? 8.0 : 12.0,
-                                childAspectRatio: 0.65,
-                              ),
-                          itemCount: products.length,
-                          itemBuilder: (context, index) {
-                            final product = products[index];
-                            final double discount = 0.2;
-                            final double rating = 3.0;
-                            final double discountedPrice =
-                                product.price * (1 - discount);
-
-                            return ProductCard(
-                              product: product,
-                              discount: discount,
-                              rating: rating,
-                              discountedPrice: discountedPrice,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => ProductDetailScreen(
-                                          productId: product.id,
-                                        ),
-                                  ),
-                                );
-                              },
-                            );
+                        CategoriesSection(
+                          categories: categories,
+                          selectedCategory: selectedCategory,
+                          isMobile: isMobile,
+                          onCategoryTap: (category) {
+                            setState(() {
+                              selectedCategory =
+                                  selectedCategory == category
+                                      ? null
+                                      : category;
+                              _loadProducts();
+                            });
                           },
+                        ),
+                        ProductGridSection(
+                          products: products,
+                          crossAxisCount: crossAxisCount,
+                          isMobile: isMobile,
                         ),
                       ],
                     ),
@@ -684,6 +487,260 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(child: scaffold),
           ],
         );
+  }
+}
+
+// --- Modular Widgets ---
+
+class CarouselSection extends StatelessWidget {
+  final List<CarouselItem> carouselItems;
+  final double adsWidth;
+  final bool isMobile;
+
+  const CarouselSection({
+    super.key,
+    required this.carouselItems,
+    required this.adsWidth,
+    required this.isMobile,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (carouselItems.isEmpty) return const SizedBox.shrink();
+    return Container(
+      width: adsWidth,
+      margin: EdgeInsets.all(isMobile ? 8.0 : 16.0),
+      child: CarouselSlider(
+        options: CarouselOptions(
+          height: isMobile ? 150.0 : 200.0,
+          enlargeCenterPage: false,
+          autoPlay: true,
+          autoPlayInterval: const Duration(seconds: 3),
+          viewportFraction: 0.9,
+          aspectRatio: 16 / 9,
+          initialPage: 0,
+          enableInfiniteScroll: true,
+          scrollDirection: Axis.horizontal,
+        ),
+        items:
+            carouselItems.map((carouselItem) {
+              return Builder(
+                builder: (BuildContext context) {
+                  return GestureDetector(
+                    onTap:
+                        carouselItem.productId != null
+                            ? () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => ProductDetailScreen(
+                                        productId: carouselItem.productId!,
+                                      ),
+                                ),
+                              );
+                            }
+                            : null,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 5.0,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10.0),
+                        child: CachedNetworkImage(
+                          imageUrl: carouselItem.imageUrl,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          placeholder:
+                              (context, url) => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                          errorWidget:
+                              (context, url, error) => const Icon(Icons.error),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            }).toList(),
+      ),
+    );
+  }
+}
+
+class CategoriesSection extends StatelessWidget {
+  final List<String> categories;
+  final String? selectedCategory;
+  final bool isMobile;
+  final Function(String) onCategoryTap;
+
+  const CategoriesSection({
+    super.key,
+    required this.categories,
+    required this.selectedCategory,
+    required this.isMobile,
+    required this.onCategoryTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: isMobile ? 80 : 100,
+      child: Center(
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: categories.length,
+          padding: EdgeInsets.symmetric(horizontal: isMobile ? 16.0 : 24.0),
+          shrinkWrap: true,
+          itemBuilder: (context, index) {
+            final category = categories[index];
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: isMobile ? 8.0 : 12.0),
+              child: GestureDetector(
+                onTap: () => onCategoryTap(category),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: isMobile ? 24 : 28,
+                      backgroundColor:
+                          selectedCategory == category
+                              ? Theme.of(context).colorScheme.secondary
+                              : Colors.grey.shade200,
+                      child: Icon(
+                        category == 'Laptop'
+                            ? Icons.computer
+                            : category == 'RAM'
+                            ? Icons.data_thresholding_rounded
+                            : category == 'Processor'
+                            ? Icons.memory
+                            : category == 'Battery'
+                            ? Icons.battery_0_bar
+                            : Icons.videocam,
+                        color:
+                            selectedCategory == category
+                                ? Theme.of(context).colorScheme.onSecondary
+                                : Colors.grey,
+                        size: isMobile ? 20 : 26,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      category,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        fontSize: isMobile ? 12 : 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class ProductGridSection extends StatelessWidget {
+  final List<Product> products;
+  final int crossAxisCount;
+  final bool isMobile;
+
+  const ProductGridSection({
+    super.key,
+    required this.products,
+    required this.crossAxisCount,
+    required this.isMobile,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.all(isMobile ? 8.0 : 16.0),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: isMobile ? 8.0 : 12.0,
+        mainAxisSpacing: isMobile ? 8.0 : 12.0,
+        childAspectRatio: 0.65,
+      ),
+      itemCount: products.length,
+      itemBuilder: (context, index) {
+        final product = products[index];
+        final double discount = 0.2;
+        final double rating = 3.0;
+        final double discountedPrice = product.price * (1 - discount);
+
+        return ProductCard(
+          product: product,
+          discount: discount,
+          rating: rating,
+          discountedPrice: discountedPrice,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) => ProductDetailScreen(productId: product.id),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+// Error Snackbar Handler Widget
+class ErrorSnackbarHandler {
+  ErrorSnackbarHandler({
+    required String? categoryError,
+    required String? productsError,
+    required String? carouselError,
+    required VoidCallback onClearCategoryError,
+    required VoidCallback onClearProductsError,
+    required VoidCallback onClearCarouselError,
+    required BuildContext context,
+  }) {
+    if (categoryError != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(categoryError)));
+        onClearCategoryError();
+      });
+    }
+    if (productsError != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(productsError)));
+        onClearProductsError();
+      });
+    }
+    if (carouselError != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(carouselError)));
+        onClearCarouselError();
+      });
+    }
   }
 }
 
