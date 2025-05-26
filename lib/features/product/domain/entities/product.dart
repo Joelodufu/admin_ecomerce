@@ -1,6 +1,7 @@
 class Product {
   final int id;
   final int rating;
+  final int stock;
   final int discountRate;
   final String name;
   final double price;
@@ -10,6 +11,7 @@ class Product {
   Product({
     required this.id,
     required this.rating,
+    required this.stock,
     required this.discountRate,
     required this.name,
     required this.price,

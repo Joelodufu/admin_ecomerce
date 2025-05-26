@@ -27,4 +27,41 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<List<String>> getCategories() async {
     return await dataSource.getCategories();
   }
+
+  @override
+  Future<Product> createProduct(Product product) async {
+    final productModel = ProductModel(
+      id: product.id,
+      rating: product.rating,
+      stock: product.stock,
+      discountRate: product.discountRate,
+      name: product.name,
+      price: product.price,
+      description: product.description,
+      images: product.images,
+    );
+    final created = await dataSource.createProduct(productModel);
+    return created;
+  }
+
+  @override
+  Future<Product> updateProduct(Product product) async {
+    final productModel = ProductModel(
+      id: product.id,
+      rating: product.rating,
+      stock: product.stock,
+      discountRate: product.discountRate,
+      name: product.name,
+      price: product.price,
+      description: product.description,
+      images: product.images,
+    );
+    final updated = await dataSource.updateProduct(productModel);
+    return updated;
+  }
+
+  @override
+  Future<void> deleteProduct(int id) async {
+    await dataSource.deleteProduct(id);
+  }
 }

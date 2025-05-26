@@ -1,0 +1,2 @@
+look through the home screen and implement the full crud, you can include data table package within the code, i will install it and add it the pubspec 
+Add pagination, live search and lazy loading to it 

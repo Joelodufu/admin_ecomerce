@@ -31,6 +31,7 @@ class CartDataSourceImpl implements CartDataSource {
               ? cartItem.product as ProductModel
               : ProductModel(
                 id: cartItem.product.id,
+                stock: cartItem.product.stock,
                 rating: cartItem.product.rating,
                 discountRate: cartItem.product.discountRate,
                 name: cartItem.product.name,

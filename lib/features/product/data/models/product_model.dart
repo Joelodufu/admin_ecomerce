@@ -4,6 +4,7 @@ class ProductModel extends Product {
   ProductModel({
     required int id,
     required int rating,
+    required int stock,
     required int discountRate,
     required String name,
     required double price,
@@ -12,6 +13,7 @@ class ProductModel extends Product {
   }) : super(
          id: id,
          name: name,
+         stock: stock,
          rating: rating,
          discountRate: discountRate,
          price: price,
@@ -23,6 +25,7 @@ class ProductModel extends Product {
     return ProductModel(
       id: json['id'],
       rating: json['rating'],
+      stock: json['stock'],
       discountRate: json['discountRate'],
       name: json['name'],
       price: (json['price'] as num).toDouble(),
@@ -34,6 +37,9 @@ class ProductModel extends Product {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'rating': rating,
+      'stock': stock,
+      'discountRate': discountRate,
       'name': name,
       'price': price,
       'description': description,

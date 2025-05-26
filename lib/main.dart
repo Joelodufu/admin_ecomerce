@@ -22,7 +22,7 @@ void main() {
     DevicePreview(
       enabled: true, // Always enabled for development
       // Set default device to a mobile device (e.g., Pixel 5)
-      defaultDevice: Devices.android.smallPhone,
+      defaultDevice: Devices.ios.iPhone12,
       builder: (context) => const MyApp(),
     ),
   );
